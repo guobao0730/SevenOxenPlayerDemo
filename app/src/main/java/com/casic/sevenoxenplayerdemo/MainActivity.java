@@ -36,8 +36,8 @@ public class MainActivity extends AppCompatActivity {
 
         mPLVideoTextureView = findViewById(R.id.PLVideoTextureView);
 
-        //关联播放控制器
-        mMediaController = new MediaController(this,false,true);
+        //关联播放控制器, 使用快进并且不禁用进度条
+        mMediaController = new MediaController(this,true,false);
 
         mPLVideoTextureView.setMediaController(mMediaController);
 
@@ -57,19 +57,16 @@ public class MainActivity extends AppCompatActivity {
 
         //设置播放参数 setAVOptions
         AVOptions options = new AVOptions();
-        // the unit of timeout is ms
+        //  设置请求超时时间
         options.setInteger(AVOptions.KEY_PREPARE_TIMEOUT, 10 * 1000);
+        // 是否开启直播优化，1 为开启，0 为关闭。若开启，视频暂停后再次开始播放时会触发追帧机制  默认为 0
         options.setInteger(AVOptions.KEY_LIVE_STREAMING, 1);
-        // 1 -> hw codec enable, 0 -> disable [recommended]
-        //AVOptions.MEDIA_CODEC_SW_DECODE 表示实时直播
+        //设置解码方式      AVOptions.MEDIA_CODEC_SW_DECODE 表示软解码
         options.setInteger(AVOptions.KEY_MEDIACODEC, AVOptions.MEDIA_CODEC_SW_DECODE);
-        boolean disableLog = getIntent().getBooleanExtra("disable-log", false);
-        options.setInteger(AVOptions.KEY_LOG_LEVEL, disableLog ? 5 : 0);
-        boolean cache = getIntent().getBooleanExtra("cache", false);
         mPLVideoTextureView.setAVOptions(options);
 
-
-
+        //设置画面预览模式为全屏铺满（画面填充整个父容器）
+        mPLVideoTextureView.setDisplayAspectRatio(PLVideoView.ASPECT_RATIO_PAVED_PARENT);
 
 
     }
@@ -107,17 +104,28 @@ public class MainActivity extends AppCompatActivity {
         });
 
 
+        //设置点击速度速度调整监听器
         mMediaController.setOnClickSpeedAdjustListener(new MediaController.OnClickSpeedAdjustListener() {
+
+            /*
+            正常点击速度
+             */
             @Override
             public void onClickNormal() {
                 mPLVideoTextureView.setPlaySpeed(0X00010001);
             }
 
+            /*
+            * 快速点击
+            * */
             @Override
             public void onClickFaster() {
                 mPLVideoTextureView.setPlaySpeed(0X00020001);
             }
 
+            /*
+            * 慢速点击
+            * */
             @Override
             public void onClickSlower() {
                 mPLVideoTextureView.setPlaySpeed(0X00010002);
